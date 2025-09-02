@@ -11,7 +11,7 @@ import (
 func main() {
 	// CLI flag
 	url := flag.String("url", "", "URL to fetch")
-	
+
 	flag.Parse()
 
 	if *url == "" {
