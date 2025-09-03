@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+// ANSI colors
+const (
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Reset  = "\033[0m"
+)
+
 func main() {
 	// CLI flags
 	url := flag.String("url", "", "URL to fetch")
@@ -33,7 +41,7 @@ func main() {
 	// Create HTTP request
 	req, err := http.NewRequest(strings.ToUpper(*requestType), *url, bodyReader)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Creating request failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, Red+"Creating request failed: %v\n"+Reset, err)
 		os.Exit(1)
 	}
 
@@ -44,35 +52,37 @@ func main() {
 
 	// Verbose output
 	if *verbose {
+		fmt.Println(Yellow + "=== Verbose Mode ===" + Reset)
 		fmt.Println("Request Method:", req.Method)
 		fmt.Println("Request URL:", req.URL.String())
 		if bodyReader != nil {
 			fmt.Println("Request Body:", *data)
 		}
 		fmt.Println("Request Headers:", req.Header)
+		fmt.Println(Yellow + "====================" + Reset)
 	}
 
 	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Request failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, Red+"Request failed: %v\n"+Reset, err)
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
 
-	// Print response status
-	if (resp.Status == "200 OK" || resp.Status == "201 Created" ) {
-		fmt.Println("Status:", resp.Status, "✅")
-		
-	}else{
-		fmt.Println("Status:", resp.Status)
-
+	// Print response status with colors
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		fmt.Println(Green+"Status:", resp.Status, "✅"+Reset)
+	} else if resp.StatusCode >= 400 {
+		fmt.Println(Red+"Status:", resp.Status, "❌"+Reset)
+	} else {
+		fmt.Println(Yellow+"Status:", resp.Status, "⚠️"+Reset)
 	}
 
-
+	// Print response body
 	_, err = io.Copy(os.Stdout, resp.Body)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Reading body failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, Red+"Reading body failed: %v\n"+Reset, err)
 	}
 }
