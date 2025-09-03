@@ -62,9 +62,15 @@ func main() {
 	defer resp.Body.Close()
 
 	// Print response status
-	fmt.Println("Status:", resp.Status, "✅")
+	if (resp.Status == "200 OK" || resp.Status == "201 Created" ) {
+		fmt.Println("Status:", resp.Status, "✅")
+		
+	}else{
+		fmt.Println("Status:", resp.Status)
 
-	// Print response body
+	}
+
+
 	_, err = io.Copy(os.Stdout, resp.Body)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Reading body failed: %v\n", err)
